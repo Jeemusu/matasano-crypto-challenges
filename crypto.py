@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 
+#------------------------------------------------------------------------------
+# Set 1 Question 1
+
+
+
+
 # Convert hexadecimal string to base64
 def hexToBase64(s):
 
@@ -23,6 +29,7 @@ def hexToBinary(s):
         binary_string += intToBinary(i)
 
     return binary_string
+
 
 # Convert hexadecimal string to a list of ASCII indexes
 def hexToAscii(s):
@@ -73,7 +80,11 @@ def encodeBase64(s):
     return base64_string
 
 
+
+
 #------------------------------------------------------------------------------
+# Other functions
+
 
 
 
@@ -88,8 +99,9 @@ def decodeHex(s):
 
 
 
-#------------------------------------------------------------------------------
 
+#------------------------------------------------------------------------------
+# Set 1 Question 2
 
 
 
@@ -157,38 +169,16 @@ def asciiToHex(n):
 
 
 
-
-
 #------------------------------------------------------------------------------
+# Set 1 Question 3
 
 
 
-
-# XOR a hexadecimal string against a single character
-# returns a hexadecimal string
-def xor_hex_char(s, c):
-    hex_str = ''
-    c = intToBinary( ord(c) )
-    for a in s:
-        a = intToBinary( ord(a) )
-        hex_str += binaryToHex(fixed_xor_str(a, c))
-
-    return hex_str
-
-
-# XOR a hexadecimal string against a single character
-# returns a ascii string
-def xor_hex_ascii(s, c):
-    hex_str = xor_hex_char(s,c)
-    ascii_str = ''
-    for i in splitString( hex_str, 2):
-        ascii_str += decodeHex(i)
-    return ascii_str
 
 # Return a rank value for a sentance depending on how many common words it contains
 def getRank(s):
     rank = 0
-    common_words = ['a', 'the', 'of', 'or', 'and', 'is']
+    common_words = ['the', 'of', 'or', 'and', 'is']
     ranked_list = {}
 
     # split string into words
@@ -197,3 +187,51 @@ def getRank(s):
             rank += 1
 
     return rank
+
+
+# returns the most likely decoded message and key for a hexadecimal string
+def findSingleCharacterKey(s):
+    a_to_z = '1234567890abcdefghjklmnopqrstuvwxyzABCDEDFGHJKLMNOPQRSTUVWXYZ'
+    ranked = {}
+    highest_ranked = 0
+
+    binary_string = hexToBinary(s)
+
+    # XOR message against each potential a-z && A-Z character
+    for key in a_to_z:
+
+        decoded = decodeSingleCharacterKey(binary_string, intToBinary(ord(key)))
+        # check the rank of each potential decoded message
+        rank = getRank(decoded)
+
+        if(rank > 0 and rank > highest_ranked):
+            ranked = key
+            highest_ranked = rank
+
+    if ranked:
+        return ranked
+
+
+# XORS a 8-bit binary string against a larger binary string
+def decodeSingleCharacterKey(s, key):
+    string = ''
+
+    # XOR each 8-bit segment
+    for i in splitString( s, 8):
+
+        # XOR each binary string against potential key
+        string += fixed_xor_str(i, key)
+
+    # convert decoded message back to hexadecimal
+    decoded = decodeHex(binaryToHex(string))
+
+    return decoded
+
+
+
+
+#------------------------------------------------------------------------------
+# Set 1 Question 4
+
+
+
