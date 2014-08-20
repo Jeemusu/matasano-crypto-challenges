@@ -9,11 +9,9 @@ start = time.time()
 """
 Problem
 
-The hex encoded string:
+One of the 60-character strings in this file has been encrypted by single-character XOR.
 
-1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736
-
-... has been XOR'd against a single character. Find the key, decrypt the message.
+Find it.
 """
 
 

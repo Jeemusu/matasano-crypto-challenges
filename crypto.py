@@ -235,3 +235,43 @@ def decodeSingleCharacterKey(s, key):
 
 
 
+
+def strToBinary(s):
+    binary_str = ''
+    for c in s:
+        binary_str += charToBinary(c)
+    return binary_str
+
+def charToBinary(c):
+    return intToBinary(ord(c))
+
+
+
+
+#------------------------------------------------------------------------------
+# Set 1 Question 5
+
+
+
+
+def encryptRepeatingKeyXOR(s, key):
+    
+    #convert the string and key to binary
+    binary_s = strToBinary(s)
+    binary_keys = splitString(strToBinary(key), 8)
+
+    encoded_string = ''
+    for i, binary in enumerate(splitString(binary_s, 8)):
+        encoded_string += fixed_xor_str(binary, binary_keys[i%len(key)])
+
+    return binaryToHex(encoded_string)
+
+
+
+
+#------------------------------------------------------------------------------
+# Set 1 Question 6
+
+
+
+
