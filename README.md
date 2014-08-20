@@ -1,1 +1,1 @@
-Python solutions to the Matasano Crypto Challenge
+Python solutions to the [Matasano Crypto Challenges](http://cryptopals.com/).
