@@ -3,19 +3,36 @@
 #------------------------------------------------------------------------------
 # Set 1 Question 1
 
-
-
-
 # Convert hexadecimal string to base64
 def hexToBase64(s):
 
+    # convert to 8-bit binary
     binary_string = hexToBinary(s)
 
-    # convert to 6-bit binary
-    binary_string = padNBits(binary_string, 6)
+    # convert binary string to base64
+    base64_str = binaryToBase64(binary_string)
+
+    return base64_str
+
+
+# Convert a binary string to base64
+def binaryToBase64(s):
+
+    # check how many padding bits we need
+    padding = len(s) % 6
+    if(padding !=0):
+        padding = (6 - (len(s) % 6)) / 2
+
+    # convert to n-bit binary string to 6-bit binary
+    six_bit_binary_string = padNBits(s, 6)
 
     # convert binary to Base64 string
-    return encodeBase64(binary_string)    
+    base64_str = encodeBase64(six_bit_binary_string)    
+
+    # add padding bits
+    base64_str = ''.join([base64_str, '='*padding]) 
+
+    return base64_str
 
 
 def hexToBinary(s):
@@ -44,6 +61,9 @@ def hexToAscii(s):
 # Converts a number to a 8-bit binary number
 def intToBinary(n):
     return '{0:08b}'.format(int(n))
+
+def intTo6BitBinary(n):
+    return '{0:06b}'.format(int(n))
 
 
 # Split string into list of n bits
@@ -98,6 +118,53 @@ def decodeHex(s):
     return string
 
 
+def base64ToBinary(s):
+    baseList = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+    binary_str = ''
+    padding_bits = 0
+
+    for c in s:
+        if c == '=':
+            padding_bits+= 2
+            continue
+        binary_str += intTo6BitBinary(baseList.index(c))
+
+    # remove padding
+    if(padding_bits):
+        binary_str = binary_str[:-padding_bits]
+
+    return binary_str
+
+
+def strToHex(s):
+    ascii_list = ''
+    for c in s:
+        ascii_list+=asciiToHex(ord(c))
+
+    return ascii_list
+
+
+def strToBase64(s):
+    return hexToBase64(strToHex(s))
+
+
+def base64ToStr(s):
+    
+    string = ''
+
+    #convert to binary
+    binary_str = base64ToBinary(s)
+
+    for c in splitString(binary_str, 8):
+        string += chr(binaryToAscii(c))
+    
+    return string
+
+def binaryToStr(s):
+    string = ''
+    for c in splitString(s, 8):
+        string += chr(binaryToAscii(c))
+    return string   
 
 
 #------------------------------------------------------------------------------
@@ -147,20 +214,24 @@ def fixed_xor_str(a, b):
 
 # Convert an 8-bit binary string to hexadecimal
 def binaryToHex(s):
-    ascii_numbers = binaryToAscii(s, 8)
+    ascii_numbers = binaryStrToAscii(s)
     hex_string = ''
     for i in ascii_numbers:
-        hex_string += asciiToHex(i)
-    return hex_string
+        hex_string += "{0:0>2x}".format(int(i))
+
+    return hex_string 
 
 
 # Convert a binary string of n-bits to a list of ascii decimal numbers
-def binaryToAscii(s, n):
+def binaryStrToAscii(s):
     ascii_list = []
-    for i in splitString(s,n):
-        ascii_list.append( str(int(i,2)) )
+    for i in splitString(s,8):
+        ascii_list.append( str(binaryToAscii(i)) )
     return ascii_list  
 
+
+def binaryToAscii(s):
+    return int(s,2)
 
 # Convert an ascii decimal to hexadecimal
 def asciiToHex(n):
@@ -177,30 +248,34 @@ def asciiToHex(n):
 
 # Return a rank value for a sentance depending on how many common words it contains
 def getRank(s):
+    common = ['e','t','a','o','i','n']
+    less_common = ['s','h','r','d','l','u']
+    common_words = ['the', 'be', 'to', 'of', 'and', 'a', 'in', 'that', 'have', 'is', "I'm", 'on', 'at']
     rank = 0
-    common_words = ['the', 'of', 'or', 'and', 'is']
-    ranked_list = {}
+    string = s.lower()
+    for i in range (0, len(string)):
+        if s[i] in common:
+            rank += 2
+        if s[i] in less_common:
+            rank += 1
 
-    # split string into words
     for word in s.split(' '):
         if(word in common_words):
             rank += 1
-
     return rank
 
 
 # returns the most likely decoded message and key for a hexadecimal string
+
 def findSingleCharacterKey(s):
-    a_to_z = '1234567890abcdefghjklmnopqrstuvwxyzABCDEDFGHJKLMNOPQRSTUVWXYZ'
+    a_to_z = "1234567890abcdefghijklmnopqrstuvwxyzABCDEDFGHJKLMNOPQRSTUVWXYZ:'., "
     ranked = {}
     highest_ranked = 0
 
-    binary_string = hexToBinary(s)
-
-    # XOR message against each potential a-z && A-Z character
     for key in a_to_z:
+        
+        decoded = decodeSingleCharacterKey(s, intToBinary(ord(key)))
 
-        decoded = decodeSingleCharacterKey(binary_string, intToBinary(ord(key)))
         # check the rank of each potential decoded message
         rank = getRank(decoded)
 
@@ -211,22 +286,20 @@ def findSingleCharacterKey(s):
     if ranked:
         return ranked
 
-
 # XORS a 8-bit binary string against a larger binary string
 def decodeSingleCharacterKey(s, key):
     string = ''
 
     # XOR each 8-bit segment
-    for i in splitString( s, 8):
+    for byte in splitString(s, 8):
 
         # XOR each binary string against potential key
-        string += fixed_xor_str(i, key)
+        string += fixed_xor_str(byte, key)
 
     # convert decoded message back to hexadecimal
-    decoded = decodeHex(binaryToHex(string))
+    decoded = binaryToStr(string)
 
     return decoded
-
 
 
 
@@ -253,7 +326,8 @@ def charToBinary(c):
 
 
 
-
+# encrypt s(string) with repeating key(string)
+# returns binary string
 def encryptRepeatingKeyXOR(s, key):
     
     #convert the string and key to binary
@@ -264,7 +338,7 @@ def encryptRepeatingKeyXOR(s, key):
     for i, binary in enumerate(splitString(binary_s, 8)):
         encoded_string += fixed_xor_str(binary, binary_keys[i%len(key)])
 
-    return binaryToHex(encoded_string)
+    return encoded_string
 
 
 
@@ -273,5 +347,50 @@ def encryptRepeatingKeyXOR(s, key):
 # Set 1 Question 6
 
 
+
+
+# hamming distance of a binary string is equal to the no of 1's in s1 XOR s2 
+def hamming_distance(s1, s2):
+    tuplets = zip(s1, s2)
+    sum_of = 0
+    for ch1, ch2 in tuplets:
+        sum_of += int(ch1 != ch2)
+
+    return sum_of
+
+
+def keyWithLowestVal(d):
+     return min(d, key=d.get)
+
+
+def findRepeatingXORKeysize(s):
+
+    norm_edit_distances = {}
+    for KEYSIZE in range(2,40):
+        keysize_message = splitString(s, (KEYSIZE*8))
+        total_blocks = len(keysize_message)
+        distance = 0
+
+        for i,k in zip(keysize_message[0::2], keysize_message[1::2]):
+            distance +=hamming_distance(i,k)
+
+        norm_edit_distances[KEYSIZE] = (float(distance)/float(total_blocks)) / float(KEYSIZE)
+
+    return keyWithLowestVal(norm_edit_distances)
+
+
+
+# decrypt a binary string encrypted with a repeating key
+# returns original string
+def decryptRepeatingKeyXOR(s, key):
+    
+    #convert key to binary
+    binary_keys = splitString(strToBinary(key), 8)
+
+    encoded_string = ''
+    for i, byte in enumerate(splitString(s, 8)):
+        encoded_string += fixed_xor_str(byte, binary_keys[i%len(key)])
+
+    return binaryToStr(encoded_string)
 
 

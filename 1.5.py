@@ -39,7 +39,7 @@ message = "Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a 
 key = 'ICE'
 
 encoded = encryptRepeatingKeyXOR(message, key)
-print encoded
+print binaryToHex(encoded)
 
 print '-----------------------------------------------------------------------'
 print "\n"+"Execution time: %s" % (time.time()-start) 

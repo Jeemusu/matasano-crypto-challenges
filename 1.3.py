@@ -22,10 +22,12 @@ The hex encoded string:
 #
 
 message = '1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736'
+
+message = hexToBinary(message)
 key = findSingleCharacterKey(message)
 print "key: %s" % key
 
-decrypted = decodeSingleCharacterKey(hexToBinary(message), intToBinary(ord(key)))
+decrypted = decodeSingleCharacterKey(message, intToBinary(ord(key)))
 print "message: %s" % decrypted
 
 print '-----------------------------------------------------------------------'
