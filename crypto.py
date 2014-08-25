@@ -394,3 +394,29 @@ def decryptRepeatingKeyXOR(s, key):
     return binaryToStr(encoded_string)
 
 
+def findRepeatingXORKey(binary_cipher):
+
+    # calculate possible keysize
+    KEYSIZE = findRepeatingXORKeysize(binary_cipher)
+
+    # break the ciphertext into blocks of KEYSIZE length.
+    keysize_blocks = splitString(binary_cipher, 8*KEYSIZE)
+
+    transposed_blocks = []
+
+    # Now transpose the blocks: make a block that is the first byte of every 
+    # block, and a block that is the second byte of every block, and so on.
+    for i, block in enumerate(keysize_blocks[0:-1]):
+        for j, byte in enumerate(splitString(block, 8)):
+            if i == 0:
+                transposed_blocks.append(byte)
+            else:
+                transposed_blocks[j] = transposed_blocks[j] + byte
+
+    KEY = ''
+    for block in transposed_blocks:
+
+        #solve each block as if it where a single key XOR
+        KEY += findSingleCharacterKey(block)
+
+    return KEY
