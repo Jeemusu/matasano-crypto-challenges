@@ -460,3 +460,30 @@ def ECBScore(s):
             score += 1
         seen.add(x)
     return score
+
+
+
+
+#------------------------------------------------------------------------------
+# Set 2 Question 9
+
+
+
+
+# implement PKCS#7 padding on a string s until len(s) == length
+def PKCSPad(s, length):
+    padded_string = s
+    str_len = len(s)
+    pad_bytes = length - str_len
+
+    if (pad_bytes < 0):
+        return '\nError: string is longer than provided length'
+
+
+    for i in range(0,pad_bytes):
+        padded_string += '\X04'
+
+    return padded_string
+
+
+
