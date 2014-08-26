@@ -57,6 +57,12 @@ def hexToAscii(s):
 
     return ascii_list
 
+def hexToStr(s):
+
+    string = ''
+    for i in splitString(s,2):
+        string += chr(int(i,16))
+    return string
 
 # Converts a number to a 8-bit binary number
 def intToBinary(n):
@@ -420,3 +426,32 @@ def findRepeatingXORKey(binary_cipher):
         KEY += findSingleCharacterKey(block)
 
     return KEY
+
+
+
+
+#------------------------------------------------------------------------------
+# Set 1 Question 7
+
+
+
+
+#------------------------------------------------------------------------------
+# Set 1 Question 8
+
+
+
+
+# problem with ECB is that it is stateless and deterministic; 
+# the same 16 byte plaintext block will always produce the same 16 byte 
+# ciphertext
+def ECBScore(s):
+    blocks = splitString(s, 16)
+
+    score = 0
+    seen = set()
+    for x in blocks:
+        if x in seen:
+            score += 1
+        seen.add(x)
+    return score
