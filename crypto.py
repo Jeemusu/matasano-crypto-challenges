@@ -446,6 +446,11 @@ def findRepeatingXORKey(binary_cipher):
 # the same 16 byte plaintext block will always produce the same 16 byte 
 # ciphertext
 def ECBScore(s):
+
+    # NB: ideally we may want a list of all 16 byte blocks from each two byte 
+    # position increment within the string. 
+    
+    # split string into 16 byte blocks
     blocks = splitString(s, 16)
 
     score = 0
