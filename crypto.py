@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 
+# using PyCrypto
+from Crypto.Cipher import AES
+
+
+
+
 #------------------------------------------------------------------------------
 # Set 1 Question 1
 
@@ -487,3 +493,37 @@ def PKCSPad(s, length):
 
 
 
+
+#------------------------------------------------------------------------------
+# Set 2 Question 10
+
+
+
+
+# XOR two plaintext strings of same buffer length
+def xorStr(s, t):
+    xor_str = b''
+    for a,b in zip(s,t):
+        xor_str += chr(ord(a) ^ ord(b))
+    return xor_str
+
+
+# Encrypts a string using AES in CBC mode
+# uses PyCrypto for initial encryption
+def encryptAES_CBC(plaintext, iv, key):
+    ciphertext = ''
+    prev_iv = iv
+    pycrypto = AES.new(key, AES.MODE_ECB, iv)
+
+    for plainblock in splitString(plaintext, len(key)):
+        encoded_string = pycrypto.encrypt(xorStr(plainblock, prev_iv))
+        ciphertext += encoded_string
+        prev_iv = encoded_string
+
+    return ciphertext
+
+
+# Decrypts a string encrypted with AES in CBC mode
+# uses PyCrypto for initial decryption
+def decryptAES_CBC(plaintext, iv, key):
+    return 1
