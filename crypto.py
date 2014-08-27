@@ -2,7 +2,7 @@
 
 # using PyCrypto
 from Crypto.Cipher import AES
-
+import random
 
 
 
@@ -451,13 +451,13 @@ def findRepeatingXORKey(binary_cipher):
 # problem with ECB is that it is stateless and deterministic; 
 # the same 16 byte plaintext block will always produce the same 16 byte 
 # ciphertext
-def ECBScore(s):
+def ECBScore(s, n=16):
 
     # NB: ideally we may want a list of all 16 byte blocks from each two byte 
     # position increment within the string. 
     
     # split string into 16 byte blocks
-    blocks = splitString(s, 16)
+    blocks = splitString(s, n)
 
     score = 0
     seen = set()
@@ -476,16 +476,15 @@ def ECBScore(s):
 
 
 
-# implement PKCS#7 padding on a string s until len(s) == length
-def PKCSPad(s, length):
+# implement PKCS#7 padding on a string s until multiple of n
+def PKCSPad(s, n):
     padded_string = s
-    str_len = len(s)
-    pad_bytes = length - str_len
+    pad_bytes = n - (len(s) % n)
 
-    if (pad_bytes < 0):
-        return 'Error: string is longer than provided length'
+    if (pad_bytes == n):
+        return s
 
-    for i in range(0,pad_bytes+1):
+    for i in range(0,pad_bytes):
         padded_string += '\x04'
 
     return padded_string
@@ -517,17 +516,15 @@ def encryptAES_CBC(plaintext, iv, key):
     prev_iv = iv
     pycrypto = AES.new(key, AES.MODE_ECB, iv)
 
+    #  padd plaintext
+    plaintext = PKCSPad(plaintext, len(key))
+
     for plainblock in splitString(plaintext, len(key)):
-
-        if len(plainblock) != len(key):
-            plainblock = PKCSPad(plainblock, len(key) - len(plainblock))
-
         encoded_string = pycrypto.encrypt(xorStr(plainblock, prev_iv))
         ciphertext += encoded_string
         prev_iv = encoded_string
 
     return ciphertext
-
 
 
 # Decrypts a string encrypted with AES in CBC mode
@@ -543,3 +540,61 @@ def decryptAES_CBC(ciphertext, iv, key):
         prev_iv = cipherblock
 
     return PKCSRemovePad(plaintext)
+
+
+
+
+#------------------------------------------------------------------------------
+# Set 2 Question 11
+
+
+
+
+def encryptAES_ECB(s, key):
+    pycrypto = AES.new(key, AES.MODE_ECB)
+    return pycrypto.encrypt(s) 
+
+
+# generate a random string of bytes of length n
+def genNRandBytes(n=16):
+    chars = list("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*-+_=")
+    random.shuffle(chars)
+    key = ""
+
+    for i in range(1,n+1):
+        rand = random.randint(1,73)
+        key += chars[rand]
+    return key
+
+
+# encrypts data under a random key
+def encryption_oracle(s):
+
+    # generate random key
+    key = genNRandBytes(16)
+
+    # append 5-10 bytes before and 5-10 bytes after plaintext
+    prepend_bytes = genNRandBytes(random.randint(5,10))
+    append_bytes = genNRandBytes(random.randint(5,10))
+    s = prepend_bytes + s + append_bytes
+
+    # padd string to multiple of 16
+    s = PKCSPad(s, 16)
+
+    if bool(random.getrandbits(1)) == 1:
+        ciphertext = encryptAES_ECB(s,key)
+    else:
+        iv = genNRandBytes(16)
+        ciphertext = encryptAES_CBC(s, iv, key)
+
+    return ciphertext
+
+
+# attempt to detect encryption mode of AES
+# only works for plaintext strings with repeating 16 byte blocks
+def detectAESMode(s):
+    if (ECBScore(s)):
+        return "ECB"
+    else:
+        return "CBC" 
+

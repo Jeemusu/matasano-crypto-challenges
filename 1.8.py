@@ -32,8 +32,8 @@ with open ("1.8.txt", "r") as myfile:
 for lineno,line in enumerate(blocks):
     score = ECBScore(line)
     if score > 0:
-        print "Line: %s , Rank: %s" % (lineno + 1, score)
+        print "\nLine: %s , Rank: %s" % (lineno + 1, score)
 
 print '-----------------------------------------------------------------------'
-print "\n"+"Execution time: %s" % (time.time()-start) 
+print "Execution time: %s" % (time.time()-start) 
 print '\n'
