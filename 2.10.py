@@ -33,22 +33,18 @@ The file here is intelligible (somewhat) when CBC decrypted against "YELLOW SUBM
 # Solution
 #
 
-message = 'The crow flies from the chicken coop at dawn yo!'
+message = 'In CBC mode, each ciphertext block is added to the next plaintext block before the next call to the cipher core.' 
 key = 'YELLOW SUBMARINE'
 iv = bytes('\x00' * 16)
-#iv = bytes([0] * 16)
 
+# tests
 encrypted_message = encryptAES_CBC(message, iv, key)
-print('Encrypted: %r' % encrypted_message)
+print repr(encrypted_message)
 
-# in progress
 decrypted_message = decryptAES_CBC(encrypted_message, iv, key)
+print decrypted_message
 
-decryptor = AES.new(key, AES.MODE_CBC, iv)
-decrypted_message = decryptor.decrypt(encrypted_message)
-print('Decrypted: %r' % decrypted_message)
 
-"""
 
 with open ("2.10.txt", "r") as myfile:
     blocks = myfile.readlines()
@@ -62,12 +58,9 @@ b64_cipher =  "".join(blocks)
 # decode base64
 ciphertext = base64ToStr(b64_cipher)
 
-key = 'YELLOW SUBMARINE'
-IV = bytes('\x00' * 16)
-decryptor = AES.new(key, AES.MODE_ECB, IV)
-plain = decryptor.decrypt(ciphertext)
-print plain
-"""
+decrypted_message = decryptAES_CBC(ciphertext, iv, key)
+print decrypted_message
+
 print '-----------------------------------------------------------------------'
 print "Execution time: %s" % (time.time()-start) 
 print '\n'

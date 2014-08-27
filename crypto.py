@@ -483,14 +483,16 @@ def PKCSPad(s, length):
     pad_bytes = length - str_len
 
     if (pad_bytes < 0):
-        return '\nError: string is longer than provided length'
+        return 'Error: string is longer than provided length'
 
-
-    for i in range(0,pad_bytes):
-        padded_string += '\X04'
+    for i in range(0,pad_bytes+1):
+        padded_string += '\x04'
 
     return padded_string
 
+
+def PKCSRemovePad(s):
+    return s.replace('\x04','')
 
 
 
@@ -516,6 +518,10 @@ def encryptAES_CBC(plaintext, iv, key):
     pycrypto = AES.new(key, AES.MODE_ECB, iv)
 
     for plainblock in splitString(plaintext, len(key)):
+
+        if len(plainblock) != len(key):
+            plainblock = PKCSPad(plainblock, len(key) - len(plainblock))
+
         encoded_string = pycrypto.encrypt(xorStr(plainblock, prev_iv))
         ciphertext += encoded_string
         prev_iv = encoded_string
@@ -523,7 +529,17 @@ def encryptAES_CBC(plaintext, iv, key):
     return ciphertext
 
 
+
 # Decrypts a string encrypted with AES in CBC mode
 # uses PyCrypto for initial decryption
-def decryptAES_CBC(plaintext, iv, key):
-    return 1
+def decryptAES_CBC(ciphertext, iv, key):
+    plaintext = ''
+    prev_iv = iv
+    pycrypto = AES.new(key, AES.MODE_ECB, iv)
+
+    for cipherblock in splitString(ciphertext, len(key)):
+        decoded_string = xorStr(pycrypto.decrypt(cipherblock), prev_iv)
+        plaintext += decoded_string
+        prev_iv = cipherblock
+
+    return PKCSRemovePad(plaintext)
